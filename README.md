@@ -1,3 +1,7 @@
+# Burger App
+This is a project for React 16.6 - The Complete Guide (incl. React Router & Redux) @ Udemy. course link [here](https://www.udemy.com/react-the-complete-guide-incl-redux/)
+   
+   
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
