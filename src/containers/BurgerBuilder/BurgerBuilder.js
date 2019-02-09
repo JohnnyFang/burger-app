@@ -16,16 +16,22 @@ const INGREDIENT_PRICES = {
 
 class BurgerBuilder extends Component {
     state = {
-        ingredients: {
-            salad: 0,
-            bacon: 0,
-            cheese: 0,
-            meat: 0
-        },
+        ingredients: null,
         totalPrice: 4,
         purchasable: false,
         purchasing: false,
-        loading: false
+        loading: false,
+        error: false
+    }
+
+    componentDidMount () {
+        axios.get('https://burger-app-dcb51.firebaseio.com/ingredients.json')
+            .then(response => {
+                this.setState({ingredients: response.data})
+            })
+            .catch( error => {
+                this.setState( { error: true } );
+            } );
     }
 
     updatePurchaseState (ingredients) {
@@ -64,7 +70,6 @@ class BurgerBuilder extends Component {
         const priceSubtraction = INGREDIENT_PRICES[type];
         const oldPrice = this.state.totalPrice;
         const newPrice = oldCount > 0 ? oldPrice - priceSubtraction : oldPrice       
-        
         this.setState({totalPrice: newPrice, ingredients: updatedIngredients})
         this.updatePurchaseState(updatedIngredients)
     }
@@ -113,20 +118,12 @@ class BurgerBuilder extends Component {
             disabledInfo[key] = disabledInfo[key] <=0
             
         }
-        let orderSummary = <OrderSummary 
-                            price={this.state.totalPrice}
-                            ingredients={this.state.ingredients}
-                            purchaseCanceled={this.purchaseCancelHandler}
-                            purchaseContinued={this.purchaseContinueHandler}
-                            />
-        if (this.state.loading){
-            orderSummary = <Spinner />
-        }
-        return (
-            <>
-                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
-                    {orderSummary}                    
-                </Modal> 
+        let orderSummary = null;
+        let burger = this.state.error ? <p>Ingredients can't be loaded!</p> : <Spinner />;
+
+        if (this.state.ingredients){
+            burger = (
+                <>
                 <Burger ingredients={this.state.ingredients} />
                 <BuildControls 
                     disabled = {disabledInfo}
@@ -135,6 +132,25 @@ class BurgerBuilder extends Component {
                     ingredientAdded={this.addIngredientHandler}
                     ingredientremoved={this.removeIngredientHandler}
                     ordered={this.purchaseHandler}/>
+                </>
+            )
+            orderSummary = <OrderSummary 
+                            price={this.state.totalPrice}
+                            ingredients={this.state.ingredients}
+                            purchaseCanceled={this.purchaseCancelHandler}
+                            purchaseContinued={this.purchaseContinueHandler}
+                            />
+        }
+        if (this.state.loading){
+            orderSummary = <Spinner />
+        }
+        
+        return (
+            <>
+                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
+                    {orderSummary}                    
+                </Modal> 
+                {burger}
             </>
         )
     }
