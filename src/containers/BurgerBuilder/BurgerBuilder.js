@@ -78,36 +78,23 @@ class BurgerBuilder extends Component {
         this.setState({purchasing: true})
     }
 
-    purchaseCancelHandler = () => {
+    purchaseCancellHandler = () => {
         this.setState({purchasing: false})
     }
 
     purchaseContinueHandler = () => {
         // alert('You Continue!')
-        this.setState({loading: true})
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Johnny Fang',
-                address: {
-                    street: 'Elm Street',
-                    country: 'Colombia'
-                },
-                email: 'test@test.com'
-            },
-            deliverMethod: 'fastest'
+        
+        let queryParams = []
+        for (let i in this.state.ingredients){
+            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]))
         }
-        // axios.post('/orders.json', order)
-        axios.post('/orders', order)
-            .then(response => {
-                this.setState({ loading: false, purchasing: false});
-                // console.log(response)
-            })
-            .catch(error => {
-                this.setState({ loading: false, purchasing: false});
-                console.log(error)
-            })
+        queryParams.push('price='+ this.state.totalPrice)
+        const queryString = queryParams.join('&')
+        this.props.history.push({
+            pathname: '/checkout', 
+            search: '?' + queryString
+        })
     }
 
     render () {
@@ -137,7 +124,7 @@ class BurgerBuilder extends Component {
             orderSummary = <OrderSummary 
                             price={this.state.totalPrice}
                             ingredients={this.state.ingredients}
-                            purchaseCanceled={this.purchaseCancelHandler}
+                            purchaseCancelled={this.purchaseCancellHandler}
                             purchaseContinued={this.purchaseContinueHandler}
                             />
         }
